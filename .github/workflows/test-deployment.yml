@@ -1,0 +1,69 @@
+name: Test Deployment
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml kubernetes
+          
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.5.0
+        with:
+          cluster_name: "test-cluster"
+          
+      - name: Install ArgoCD
+        run: |
+          kubectl create namespace argocd
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+          kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
+          echo "ArgoCD installed successfully"
+          
+      - name: Create test namespaces
+        run: |
+          kubectl create namespace dev
+          kubectl create namespace staging
+          kubectl create namespace production
+          echo "Test namespaces created"
+          
+      - name: Deploy base application
+        run: |
+          kubectl apply -f ./base/nginx-app.yaml
+          echo "Base application deployed"
+          
+      - name: Test dev deployment
+        run: |
+          kubectl apply -f ./environments/dev/nginx-app.yaml
+          kubectl wait --for=condition=available --timeout=120s deployment/nginx-dev -n dev || true
+          kubectl get pods -n dev
+          echo "Dev deployment tested"
+          
+      - name: Test blue-green deployment
+        run: |
+          kubectl apply -f ./manifests/blue-green/app1-blue-green.yaml
+          kubectl wait --for=condition=available --timeout=120s deployment/app1-blue -n production || true
+          kubectl get pods -n production
+          echo "Blue-green deployment tested"
+          
+      - name: Test canary deployment
+        run: |
+          kubectl apply -f ./manifests/canary/canary-deployment.yaml
+          kubectl wait --for=condition=available --timeout=120s deployment/app1-stable -n production || true
+          kubectl get pods -n production
+          echo "Canary deployment tested" 

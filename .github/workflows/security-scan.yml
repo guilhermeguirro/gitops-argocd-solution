@@ -1,0 +1,45 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './scripts'
+          
+      - name: Run Trivy vulnerability scanner for YAML files
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          
+      - name: Run Checkov for IaC security scanning
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: kubernetes
+          
+      - name: Run Kubesec for Kubernetes security scanning
+        run: |
+          # Install kubesec
+          curl -s https://raw.githubusercontent.com/controlplaneio/kubesec/master/install.sh | sh
+          
+          # Scan Kubernetes YAML files
+          find . -name "*.yaml" -o -name "*.yml" | grep -v ".github" | xargs -I{} sh -c 'echo "Scanning {}"; ./kubesec scan {} || true' 

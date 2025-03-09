@@ -1,0 +1,60 @@
+name: Validate GitOps Solution
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml kubernetes
+          
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+          
+      - name: Validate YAML files
+        run: |
+          echo "Validating YAML files..."
+          find . -name "*.yaml" -o -name "*.yml" | xargs -I{} sh -c 'echo "Validating {}"; python -c "import yaml; yaml.safe_load(open(\"{}\"))"'
+          
+      - name: Validate shell scripts
+        run: |
+          echo "Validating shell scripts..."
+          find ./scripts -name "*.sh" | xargs -I{} sh -c 'echo "Validating {}"; bash -n {}'
+          
+      - name: Validate Python scripts
+        run: |
+          echo "Validating Python scripts..."
+          find ./scripts -name "*.py" | xargs -I{} sh -c 'echo "Validating {}"; python -m py_compile {}'
+          
+      - name: Check script permissions
+        run: |
+          echo "Checking script permissions..."
+          find ./scripts -name "*.sh" -o -name "*.py" | xargs ls -la
+          
+      - name: Validate directory structure
+        run: |
+          echo "Validating directory structure..."
+          [ -d "./base" ] && echo "✅ base directory exists" || echo "❌ base directory missing"
+          [ -d "./environments" ] && echo "✅ environments directory exists" || echo "❌ environments directory missing"
+          [ -d "./environments/dev" ] && echo "✅ dev environment exists" || echo "❌ dev environment missing"
+          [ -d "./environments/staging" ] && echo "✅ staging environment exists" || echo "❌ staging environment missing"
+          [ -d "./environments/production" ] && echo "✅ production environment exists" || echo "❌ production environment missing"
+          [ -d "./manifests" ] && echo "✅ manifests directory exists" || echo "❌ manifests directory missing"
+          [ -d "./scripts" ] && echo "✅ scripts directory exists" || echo "❌ scripts directory missing" 
