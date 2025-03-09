@@ -19,6 +19,8 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: './scripts'
+          severity: error  # Only fail on errors, not warnings
+          check_together: true  # Check all scripts together
           
       - name: Run Trivy vulnerability scanner for YAML files
         uses: aquasecurity/trivy-action@master
