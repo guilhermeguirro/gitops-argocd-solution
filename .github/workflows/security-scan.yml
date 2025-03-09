@@ -41,8 +41,10 @@ jobs:
           
       - name: Run Kubesec for Kubernetes security scanning
         run: |
-          # Install kubesec
-          curl -s https://raw.githubusercontent.com/controlplaneio/kubesec/master/install.sh | sh
+          # Install kubesec directly
+          wget https://github.com/controlplaneio/kubesec/releases/download/v2.13.0/kubesec_linux_amd64.tar.gz
+          tar -xzf kubesec_linux_amd64.tar.gz
+          chmod +x kubesec
           
           # Scan Kubernetes YAML files
           find . -name "*.yaml" -o -name "*.yml" | grep -v ".github" | xargs -I{} sh -c 'echo "Scanning {}"; ./kubesec scan {} || true' 
