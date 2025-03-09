@@ -31,7 +31,7 @@ jobs:
       - name: Validate YAML files
         run: |
           echo "Validating YAML files..."
-          find . -name "*.yaml" -o -name "*.yml" | xargs -I{} sh -c 'echo "Validating {}"; python -c "import yaml; yaml.safe_load(open(\"{}\"))"'
+          find . -name "*.yaml" -o -name "*.yml" | xargs -I{} sh -c 'echo "Validating {}"; python -c "import yaml; list(yaml.safe_load_all(open(\"{}\")))"'
           
       - name: Validate shell scripts
         run: |
