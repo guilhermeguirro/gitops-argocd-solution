@@ -1,5 +1,9 @@
 # GitOps Solution with ArgoCD
 
+[![Validate GitOps Solution](https://github.com/guilhermeguirro/gitops-argocd-solution/actions/workflows/validate.yml/badge.svg)](https://github.com/guilhermeguirro/gitops-argocd-solution/actions/workflows/validate.yml)
+[![Test Deployment](https://github.com/guilhermeguirro/gitops-argocd-solution/actions/workflows/test-deployment.yml/badge.svg)](https://github.com/guilhermeguirro/gitops-argocd-solution/actions/workflows/test-deployment.yml)
+[![Security Scan](https://github.com/guilhermeguirro/gitops-argocd-solution/actions/workflows/security-scan.yml/badge.svg)](https://github.com/guilhermeguirro/gitops-argocd-solution/actions/workflows/security-scan.yml)
+
 This repository contains a comprehensive GitOps solution using ArgoCD, demonstrating best practices for continuous delivery with Kubernetes.
 
 ## Features
