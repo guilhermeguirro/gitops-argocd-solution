@@ -37,7 +37,7 @@ jobs:
         with:
           directory: .
           framework: kubernetes
-          soft_fail: true  # Don't fail the build on warnings
+          soft_fail: true  # Don't fail the build on Checkov warnings
           
       - name: Run Kubesec for Kubernetes security scanning
         run: |
