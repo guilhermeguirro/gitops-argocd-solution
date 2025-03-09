@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-APP_ENV
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 15.0.2
+    chart: nginx
+    helm:
+      parameters:
+      - name: replicaCount
+        value: "REPLICA_COUNT"
+      - name: service.type
+        value: ClusterIP
+      - name: image.tag
+        value: "IMAGE_TAG"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: APP_ENV
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: SELF_HEAL
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground 

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-blue
+  namespace: production
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: app1-bg
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: app1-bg
+        version: blue
+    spec:
+      containers:
+      - name: nginx
+        image: docker.io/bitnami/nginx:1.25.3-debian-11-r5
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: 10m
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-green
+  namespace: production
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: app1-bg
+      version: green
+  template:
+    metadata:
+      labels:
+        app: app1-bg
+        version: green
+    spec:
+      containers:
+      - name: nginx
+        image: docker.io/bitnami/nginx:1.25.3-debian-11-r6
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-bg-active
+  namespace: production
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: app1-bg
+    version: blue
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-bg-preview
+  namespace: production
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: app1-bg
+    version: green 

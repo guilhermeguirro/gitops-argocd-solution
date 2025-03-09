@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-stable
+  namespace: canary
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: nginx
+        version: stable
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25.1
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: 10m
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-canary
+  namespace: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: nginx
+        version: canary
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25.2
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-stable
+  namespace: canary
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: nginx
+    version: stable
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-canary
+  namespace: canary
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: nginx
+    version: canary
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: canary
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: nginx 
