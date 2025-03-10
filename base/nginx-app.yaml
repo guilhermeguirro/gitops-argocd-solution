@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nginx-base
+  name: nginx-APP_ENV
   namespace: argocd
 spec:
   project: default
@@ -12,14 +12,14 @@ spec:
     helm:
       parameters:
       - name: replicaCount
-        value: "2"
+        value: "REPLICA_COUNT"
       - name: service.type
         value: ClusterIP
       - name: image.tag
-        value: "1.25.2-debian-11-r0"
+        value: "IMAGE_TAG"
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: APP_ENV
   syncPolicy:
     automated:
       prune: true
